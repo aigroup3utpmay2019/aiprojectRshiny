@@ -72,10 +72,11 @@ plot_real_vs_pred <- function(){
     n_model <- trainneural(5)
   }
   showNotification(paste("Computing predicted strength"), duration = 3)
-  predicted_strength <- compute(n_model, concrete_valid[1:8])$net.result
   rvp_graph <-concrete_valid
   rvp_graph$index <- seq.int(nrow(rvp_graph))
-  plot_ly(rvp_graph, x = ~index, y = ~strength, type="scatter", mode="line")
+  rvp_graph$predicted_strength <- compute(n_model, concrete_valid[1:8])$net.result
+  plot_ly(rvp_graph, x = ~index, y = ~strength, name = 'real strength', type="scatter", mode="lines") %>%
+    add_trace(y = ~predicted_strength, name = 'predicted_strength', mode = 'lines+markers') 
 }
 
 # trace_0 <- rnorm(100, mean = 5)

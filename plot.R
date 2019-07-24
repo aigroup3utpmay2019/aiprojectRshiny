@@ -12,6 +12,7 @@ concrete_test <- concrete_norm[774:1030, ]
 # neuralnet ===================================================================
 library(neuralnet)
 library(ggplot2)
+library(plotly)
 n_model <- ""
 trainneural <- function(cc_data, items, hl_num) {
     n_model <- neuralnet(items, data = cc_data, hidden = hl_num)
@@ -42,17 +43,18 @@ estimatestrength <- function(hl_num, limit_x) {
         # p <- p + plot(concrete_test$strength, type="l", col="blue", bg = "gray")
         df <- concrete_test$strength
         df <- data.frame(matrix(unlist(df), nrow=length(df), byrow=T))
-        return(qplot(data = df, x = value,y = N,color=N)+geom_point())
+        plot_ly(concrete_test, x = ~cement, y = ~strength)
+        #return(qplot(data = df, x = value,y = N,color=N)+geom_point())
         # # df$idu <- as.numeric(row.names(df))
         # p <- qplot(data = df, x = value,y = N,color=N) + geom_line()
         incProgress(1/5)
         Sys.sleep(.5)
-        p <- p + lines(predicted_strength, type="l", col="red", main=NULL)
+        #p <- p + lines(predicted_strength, type="l", col="red", main=NULL)
         showNotification(paste("Plotting graph for predicted strength data"), duration = 3)
         incProgress(1/5)
         Sys.sleep(.5)
         
-        print(p)
+        #print(p)
         showNotification(paste("Graph has been plotted successfully!"), duration = 3)
     })
 }

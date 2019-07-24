@@ -4,30 +4,48 @@
 #   })
 # }
 source('plot.R')
+source('calculate.R')
 library(neuralnet)
-
+library(ggplot2)
+library(plotly)
 function(input, output, session) {
-    
+
+    observeEvent(input$button_calculate,{
+            updateTextInput(
+                session = session,
+                inputId = 'text_result',
+                value = calculate_strength(
+                    input$text_cement,
+                    input$text_slag,
+                    input$text_ash,
+                    input$text_water,
+                    input$text_superplastic,
+                    input$text_coarseagg,
+                    input$text_fineagg,
+                    input$text_age
+                )
+            ) # updateSliderInput        
+    })
+
     output$total_ratio <- renderText({ 
-        input$text_cement
+        sum(
+            as.numeric(input$text_cement),
+            as.numeric(input$text_slag), 
+            as.numeric(input$text_ash), 
+            as.numeric(input$text_water), 
+            as.numeric(input$text_superplastic), 
+            as.numeric(input$text_coarseagg), 
+            as.numeric(input$text_fineagg),
+            as.numeric(input$text_age)
+        )
     })
-
-    output$gplot <- renderPlot({
-        if (input$goButton == 0)
-            return()
-        
-        z <- isolate({input$n})
-        estimatestrength(z, 70)
+    
+    output$gplot <- renderPlotly({
+        plot_ly(concrete, x = ~cement, y = ~strength, type="scatter", mode="line")
+        #estimatestrength(z, 70)
     })
-
-    #output$nplot <- renderPlot({
-        #if (input$goButton == 0)
-            #return()
-        
-        #z <- isolate({input$n})
-        #plot(n_model)
-    #})
-
+    
+    
     output$csvtable <- renderDataTable(concrete_norm)
     output$tsttable <- renderDataTable(concrete_test)
     output$prdtable <- renderDataTable(concrete_train)

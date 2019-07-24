@@ -1,4 +1,6 @@
 library(shinythemes)
+library(ggplot2)
+library(plotly)
 def_cement <- 0.125
 def_slag <- 0.125
 def_ash <- 0.125
@@ -43,7 +45,7 @@ navbarPage(
                      value = def_ash,
                      label = NULL
                  ),
-                
+                 
                  hr(),
                  
                  sliderInput("slider_water", label = h4("Water"), min = 0, 
@@ -94,7 +96,7 @@ navbarPage(
                      label = NULL
                  ),
                  
-
+                 
                  hr(),
                  
                  
@@ -103,11 +105,11 @@ navbarPage(
                  
                  
                  hr(),
-
+                 
                  actionButton('button_calculate', 'Calculate', style='width:100%;background-color:#00AAFF'),
                  
                  hr(),
-
+                 
                  
                  h3("Result"),
                  
@@ -121,22 +123,12 @@ navbarPage(
                  
                  
              )),
-    tabPanel("Plot",
-        
-        sidebarPanel(
-            p(strong("Options")),
-            numericInput("n", "Hidden layers:", min = 0, max = 50, value = 2),
-            br(),
-            actionButton("goButton", "Go!"),
-            p("Click the button to update the graph displayed in the main panel.")
-        ),
-        
-        mainPanel(
-            tabsetPanel(type = "tabs",
-                  tabPanel("Plot", plotOutput("gplot"))
-                  #tabPanel("Model", plotOutput("nplot"))
-            )
-        )
+    tabPanel("Graph",
+             mainPanel(
+                 tabsetPanel(type = "tabs",
+                             tabPanel("All", plotlyOutput("gplot"))
+                 )
+             )
     ),
     tabPanel("Tables",
              tabPanel("Tables",
@@ -148,15 +140,27 @@ navbarPage(
                                   tabPanel("Predicted strength", 
                                            dataTableOutput('prdtable'))
                       ))
-             ),
+    ),
     
     tabPanel("About",
-             h2("Team members"),
-             p("1 - Mustaien"),
-             br(),
-             p("2 - Mugilan"),
-             br(),
-             p("3 - Azman"),
-             br()
-             )
+            h2("Team Members"),
+            h4("1 - Mustaien Fathur Rahim bin Rahmat ---- 23259 "),
+            br(),
+            h4("2 - Mugilan a/l Ravntheran ---- 25611 "),
+            br(),
+            h4("3 - Thurgashhini a/p Murugan ---- 23294"),
+            br(),
+            h4("4 - Lagindran a/l Anandarajah ---- 23237"),
+            br(),
+            h4("5 - Azman bin Ismail ---- 19956"),
+            br(),
+            h4("6 - Mohamad Noor Afiq Bin Azahari ---- 25113"),
+            br(),
+            h4("7 - Muginesh Kumar a/l Anandan ---- 23282 "),
+            br(),
+            h4("8 - Faris Effendy MOhamad Noor ---- 16001869"),
+            br(),
+            h4("9 - Ammar Aiman Bin Abdul Latif ---- 22940"),
+            br()
+    )
 )

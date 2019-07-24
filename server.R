@@ -1,13 +1,95 @@
-# function(input, output) {
-#   output$plot <- renderPlot({
-#     hist(rnorm(input$n), col = 'darkgray', border = 'white')
-#   })
-# }
-source('plot.R')
 source('calculate.R')
 library(neuralnet)
 library(ggplot2)
 library(plotly)
+
+
+# read csv =====================================================
+normalize <- function(x) {
+  return((x - min(x)) / (max(x) - min(x)))
+}
+
+concrete <- read.csv("concrete.csv", header = TRUE)
+concrete_norm <- as.data.frame(lapply(concrete, normalize))
+concrete_train <- concrete_norm[1:824, ] #773 = 75% 824 = 80 %
+concrete_valid <- concrete_norm[825:1030, ] # 206 = 20 %
+
+n_model <- ""
+n_layer <- ""
+
+# model ========================================================
+
+trainneural <- function(hl_num) {
+  showNotification(sprintf("Training neural network model, hidden layers = %d", hl_num), duration = 10)
+  n_model <- neuralnet(strength ~ 
+             cement + slag + ash + water + 
+             superplastic + coarseagg + fineagg + age,
+             data = concrete_train,
+             hidden = hl_num)
+  n_layer <- hl_num
+  return(n_model)
+}
+
+plotneural <- function(hl_num){
+  if (n_layer != hl_num){
+    n_model <- trainneural(hl_num)
+  }
+  return(plot(n_model))
+}
+
+# https://datascienceplus.com/neuralnet-train-and-test-neural-networks-using-r/
+
+tabulate_matrix <- function (){
+    return(as.data.frame( as.table(n_model$result.matrix)))
+}
+
+# calculate ==================================================================
+
+calculate_strength <- function(a, b, c, d, e, f, g, h) {
+  if (n_model == "") {
+    n_model <- trainneural(5)
+  }
+
+  cement <- as.numeric(a)
+  slag <-  as.numeric(b)
+  ash <-  as.numeric(c)
+  water <- as.numeric(d)
+  superplastic <- as.numeric(e)
+  coarseagg <-as.numeric(f)
+  fineagg <- as.numeric(g)
+  age <- as.numeric(h)
+  
+  sdf <- data.frame(cement,slag,ash,water,superplastic,coarseagg,fineagg,age)
+  
+  pred_sdf <-compute(n_model, sdf)$net.result
+  showNotification(paste("Getting result..."), duration = 3)
+  print(pred_sdf[[1]])
+}
+
+# plot =======================================================================
+plot_real_vs_pred <- function(){
+  if (n_model == "") {
+    n_model <- trainneural(5)
+  }
+  showNotification(paste("Computing predicted strength"), duration = 3)
+  predicted_strength <- compute(n_model, concrete_valid[1:8])$net.result
+  rvp_graph <-concrete_valid
+  rvp_graph$index <- seq.int(nrow(rvp_graph))
+  plot_ly(rvp_graph, x = ~index, y = ~strength, type="scatter", mode="line")
+}
+
+# trace_0 <- rnorm(100, mean = 5)
+# trace_1 <- rnorm(100, mean = 0)
+# trace_2 <- rnorm(100, mean = -5)
+# x <- c(1:100)
+# 
+# data <- data.frame(x, trace_0, trace_1, trace_2)
+# 
+# p <- plot_ly(data, x = ~x) %>%
+#   add_trace(y = ~trace_0, name = 'trace 0',mode = 'lines') %>%
+#   add_trace(y = ~trace_1, name = 'trace 1', mode = 'lines+markers') %>%
+#   add_trace(y = ~trace_2, name = 'trace 2', mode = 'markers')
+
 function(input, output, session) {
 
     observeEvent(input$button_calculate,{
@@ -41,13 +123,13 @@ function(input, output, session) {
     })
     
     output$gplot <- renderPlotly({
-        plot_ly(concrete, x = ~cement, y = ~strength, type="scatter", mode="line")
-        #estimatestrength(z, 70)
+        plot_real_vs_pred()
+
     })
     
     
     output$csvtable <- renderDataTable(concrete_norm)
-    output$tsttable <- renderDataTable(concrete_test)
+    output$tsttable <- renderDataTable(concrete_valid)
     output$prdtable <- renderDataTable(concrete_train)
     
     observeEvent(input$text_cement,{

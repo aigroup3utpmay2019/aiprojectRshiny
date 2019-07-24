@@ -1,6 +1,16 @@
 library(shinythemes)
 library(ggplot2)
 library(plotly)
+
+# cement
+# slag
+# ash
+# water
+# superplastic
+# coarseagg
+# fineagg
+# age
+
 def_cement <- 0.125
 def_slag <- 0.125
 def_ash <- 0.125
@@ -14,7 +24,14 @@ def_result <- 0
 navbarPage(
     theme = shinytheme("darkly"),
     "Conquerit!",
-    tabPanel("Home",
+    tabPanel("Graphs",
+        h2("Graphs"),
+        tabsetPanel(
+        tabPanel("Real vs Predicted Strength", plotlyOutput("gplot")),
+        tabPanel("All", paste("summary")),
+        tabPanel("Sort by x-axis", paste("summary"))
+    )),
+    tabPanel("Strength calculator",
              h2("Strength calculator"),
              wellPanel(
                  h3("Ratio"),
@@ -123,14 +140,8 @@ navbarPage(
                  
                  
              )),
-    tabPanel("Graph",
-             mainPanel(
-                 tabsetPanel(type = "tabs",
-                             tabPanel("All", plotlyOutput("gplot"))
-                 )
-             )
-    ),
     tabPanel("Tables",
+            h2("Tables"),
              tabPanel("Tables",
                       tabsetPanel(type = "tabs",
                                   tabPanel("CSV", 

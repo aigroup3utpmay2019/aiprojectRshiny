@@ -9,30 +9,30 @@ normalize <- function(x) {
   return((x - min(x)) / (max(x) - min(x)))
 }
 
-concrete <- read.csv("concrete.csv", header = TRUE)
-concrete_norm <- as.data.frame(lapply(concrete, normalize))
-concrete_train <- concrete_norm[1:824, ] #773 = 75% 824 = 80 %
-concrete_valid <- concrete_norm[825:1030, ] # 206 = 20 %
+concrete <<- read.csv("concrete.csv", header = TRUE)
+concrete_norm <<- as.data.frame(lapply(concrete, normalize))
+concrete_train <<- concrete_norm[1:824, ] #773 = 75% 824 = 80 %
+concrete_valid <<- concrete_norm[825:1030, ] # 206 = 20 %
+rvp_graph <<-concrete_valid
 
-n_model <- ""
-n_layer <- ""
+n_model <<- ""
+n_layer <<- ""
 
 # model ========================================================
 
 trainneural <- function(hl_num) {
-  showNotification(sprintf("Training neural network model, hidden layers = %d", hl_num), duration = 10)
-  n_model <- neuralnet(strength ~ 
+  showNotification(sprintf("Training neural network model, hidden layers = %d", hl_num))
+  n_model <<- neuralnet(strength ~ 
              cement + slag + ash + water + 
              superplastic + coarseagg + fineagg + age,
              data = concrete_train,
              hidden = hl_num)
-  n_layer <- hl_num
-  return(n_model)
+  n_layer <<- hl_num
 }
 
 plotneural <- function(hl_num){
   if (n_layer != hl_num){
-    n_model <- trainneural(hl_num)
+    trainneural(hl_num)
   }
   return(plot(n_model))
 }
@@ -43,12 +43,16 @@ tabulate_matrix <- function (){
     return(as.data.frame( as.table(n_model$result.matrix)))
 }
 
+set_n_model <- function(){
+  if (n_model == "") {
+    trainneural(2)
+  }
+}
+
 # calculate ==================================================================
 
 calculate_strength <- function(a, b, c, d, e, f, g, h) {
-  if (n_model == "") {
-    n_model <- trainneural(5)
-  }
+  set_n_model()
 
   cement <- as.numeric(a)
   slag <-  as.numeric(b)
@@ -68,17 +72,75 @@ calculate_strength <- function(a, b, c, d, e, f, g, h) {
 
 # plot =======================================================================
 plot_real_vs_pred <- function(){
-  if (n_model == "") {
-    n_model <- trainneural(5)
-  }
+  set_n_model()
   showNotification(paste("Computing predicted strength"), duration = 3)
-  rvp_graph <-concrete_valid
-  rvp_graph$index <- seq.int(nrow(rvp_graph))
-  rvp_graph$predicted_strength <- compute(n_model, concrete_valid[1:8])$net.result
+  rvp_graph$index <<- seq.int(nrow(rvp_graph))
+  rvp_graph$predicted_strength <<- compute(n_model, concrete_valid[1:8])$net.result
+  showNotification(sprintf("Plotting graph: Real vs predicted strength"), type = "message", duration = 3)
   plot_ly(rvp_graph, x = ~index, y = ~strength, name = 'real strength', type="scatter", mode="lines") %>%
-    add_trace(y = ~predicted_strength, name = 'predicted_strength', mode = 'lines+markers') 
+    add_trace(y = ~predicted_strength, name = 'predicted strength', mode = 'lines+markers') 
 }
 
+plot_all_axis <- function(){
+  set_n_model()
+  showNotification(paste("Plotting graph: all items over strength"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~cement, name = 'cement', type="scatter", mode="line") %>%
+    add_trace(y = ~slag, name = 'slag', mode = 'lines') %>%
+    add_trace(y = ~ash, name = 'ash', mode = 'lines') %>%
+    add_trace(y = ~ash, name = 'water', mode = 'lines') %>%
+    add_trace(y = ~ash, name = 'superplastic', mode = 'lines') %>%
+    add_trace(y = ~ash, name = 'coarseagg', mode = 'lines') %>%
+    add_trace(y = ~ash, name = 'fineagg', mode = 'lines') %>%
+    add_trace(y = ~ash, name = 'age', mode = 'lines') 
+}
+
+plot_cement <- function(){
+  set_n_model()
+  showNotification(paste("Plotting graph: cement"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~cement, name = 'cement', type="scatter", mode="line")
+}
+
+plot_slag <- function(){
+  set_n_model()
+  showNotification(sprintf("Plotting graph: slag"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~slag, name = 'slag', type="scatter", mode="line")
+}
+
+plot_ash <- function(){
+  set_n_model()
+  showNotification(sprintf("Plotting graph: ash"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~ash, name = 'ash', type="scatter", mode="line")
+}
+
+plot_water <- function(){
+  set_n_model()
+  showNotification(sprintf("Plotting graph: water"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~water, name = 'water', type="scatter", mode="line")
+}
+
+plot_superplastic <- function(){
+  set_n_model()
+  showNotification(sprintf("Plotting graph: superplastic"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~superplastic, name = 'superplastic', type="scatter", mode="line")
+}
+
+plot_coarseagg <- function(){
+  set_n_model()
+  showNotification(sprintf("Plotting graph: coarse aggregate"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~coarseagg, name = 'coarseagg', type="scatter", mode="line")
+}
+
+plot_fineagg <- function(){
+  set_n_model()
+  showNotification(sprintf("Plotting graph: fine aggregate"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~fineagg, name = 'fine aggregate', type="scatter", mode="line")
+}
+
+plot_age <- function(){
+  set_n_model()
+  showNotification(sprintf("Plotting graph: aging time"), duration = 3)
+  plot_ly(rvp_graph[order(rvp_graph$predicted_strength),], x = ~predicted_strength, y = ~age, name = 'aging time', type="scatter", mode="line")
+}
 # trace_0 <- rnorm(100, mean = 5)
 # trace_1 <- rnorm(100, mean = 0)
 # trace_2 <- rnorm(100, mean = -5)
@@ -128,6 +190,46 @@ function(input, output, session) {
 
     })
     
+    output$aplot <- renderPlotly({
+        plot_all_axis()
+      
+    })
+    
+    output$cementplot <- renderPlotly({
+      plot_cement()
+      
+    })
+    
+    output$slagplot <- renderPlotly({
+      plot_slag()
+      
+    })
+    
+    output$ashplot <- renderPlotly({
+      plot_ash()
+      
+    })
+    
+    output$waterplot <- renderPlotly({
+      plot_water()
+      
+    })
+    
+    output$superplasticplot <- renderPlotly({
+      plot_superplastic()
+    })
+    
+    output$coarseaggplot <- renderPlotly({
+      plot_coarseagg()
+    })
+    
+    output$fineaggplot <- renderPlotly({
+      plot_fineagg()
+    })
+    
+    output$ageplot <- renderPlotly({
+      plot_age()
+    })
     
     output$csvtable <- renderDataTable(concrete_norm)
     output$tsttable <- renderDataTable(concrete_valid)

@@ -28,11 +28,18 @@ navbarPage(
         h2("Graphs"),
         tabsetPanel(
         tabPanel("Real vs Predicted Strength", plotlyOutput("gplot")),
-        tabPanel("All", paste("summary")),
-        tabPanel("Sort by x-axis", paste("summary"))
+        tabPanel("All", plotlyOutput("aplot")),
+        tabPanel("Cement", plotlyOutput("cementplot")),
+        tabPanel("Slag", plotlyOutput("slagplot")),
+        tabPanel("Ash", plotlyOutput("ashplot")),
+        tabPanel("Water", plotlyOutput("waterplot")),
+        tabPanel("Superplastic", plotlyOutput("superplasticplot")),
+        tabPanel("Coarse Aggregate", plotlyOutput("coarseaggplot")),
+        tabPanel("Fine Aggregate", plotlyOutput("fineaggplot")),
+        tabPanel("Aging Time", plotlyOutput("ageplot"))
     )),
-    tabPanel("Strength calculator",
-             h2("Strength calculator"),
+    tabPanel("Strength Calculator",
+             h2("Strength Calculator"),
              wellPanel(
                  h3("Ratio"),
                  sliderInput("slider_cement", label = h4("Cement"), min = 0, 
